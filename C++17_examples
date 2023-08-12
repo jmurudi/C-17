@@ -1,0 +1,393 @@
+
+/***********************************************************************************************
+1. Structured Bindings: 
+************************************************************************************************/
+
+#include <tuple>
+#include <iostream>
+
+int main() {
+    std::tuple<int, std::string, double> myTuple(42, "Hello, world!", 3.14);
+
+    // Extracting values using structured bindings
+    auto [number, message, value] = myTuple;
+
+    // Printing the extracted values
+    std::cout << "Number: " << number << std::endl;
+    std::cout << "Message: " << message << std::endl;
+    std::cout << "Value: " << value << std::endl;
+
+    return 0;
+}
+
+/***********************************************************************************************
+2. if/switch with Initializer: 
+************************************************************************************************/
+#include <iostream>
+
+int main() {
+    if (int x = 5; x > 0) {
+        std::cout << "x is positive" << std::endl;
+    } else {
+        std::cout << "x is non-positive" << std::endl;
+    }
+
+    return 0;
+}
+
+/***********************************************************************************************
+3. constexpr if
+************************************************************************************************/
+#include <iostream>
+#include <type_traits>
+
+template <typename T>
+void processValue(T value) {
+    if constexpr (std::is_integral_v<T>) {
+        std::cout << "Integer value: " << value << std::endl;
+    } else if constexpr (std::is_floating_point_v<T>) {
+        std::cout << "Floating-point value: " << value << std::endl;
+    } else {
+        std::cout << "Unknown value type" << std::endl;
+    }
+}
+
+int main() {
+    processValue(42);       // Integer value: 42
+    processValue(3.14);     // Floating-point value: 3.14
+    processValue("Hello");  // Unknown value type
+
+    return 0;
+}
+
+/***********************************************************************************************
+4. Fold Expressions
+************************************************************************************************/
+#include <iostream>
+
+template<typename... Args>
+auto sum(Args... args) {
+    return (args + ...);
+}
+
+int main() {
+    int result = sum(1, 2, 3, 4, 5);
+    std::cout << "Sum: " << result << std::endl;
+
+    return 0;
+}
+
+
+/***********************************************************************************************
+5. Template Argument Deduction for Class Templates
+************************************************************************************************/
+template<typename T>
+class MyContainer {
+public:
+    MyContainer(T value) { /* constructor implementation */ }
+};
+
+// Deduction guide for MyContainer
+template<typename T>
+MyContainer(T) -> MyContainer<T>;
+
+int main() {
+    MyContainer container(42); // Deduction guide infers template argument as int
+
+    return 0;
+}
+
+/***********************************************************************************************
+6. constexpr Lambda Functions
+************************************************************************************************/
+#include <iostream>
+
+int main() {
+    constexpr auto square = [](int x) constexpr {
+        return x * x;
+    };
+
+    constexpr int result = square(5);
+    std::cout << "Result: " << result << std::endl;
+
+    return 0;
+}
+
+/***********************************************************************************************
+7. Inline Variables
+************************************************************************************************/
+
+// header file: constants.h
+inline constexpr int MaxValue = 100;
+
+// source file: main.cpp
+#include "constants.h"
+#include <iostream>
+
+int main() {
+    std::cout << "Max value: " << MaxValue << std::endl;
+    return 0;
+}
+
+/***********************************************************************************************
+8. Parallel Algorithms
+************************************************************************************************/
+
+In these examples, std::execution::par is used as the execution policy to indicate that the algorithm should execute in paralle
+
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <execution>
+
+void printSquare(int num) {
+    std::cout << num * num << " ";
+}
+
+int main() {
+    std::vector<int> numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+    std::cout << "Squares of numbers: ";
+    std::for_each(std::execution::par, numbers.begin(), numbers.end(), printSquare);
+    std::cout << std::endl;
+
+    return 0;
+}
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <execution>
+
+int square(int num) {
+    return num * num;
+}
+
+int main() {
+    std::vector<int> numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    std::vector<int> squares(numbers.size());
+
+    std::transform(std::execution::par, numbers.begin(), numbers.end(), squares.begin(), square);
+
+    std::cout << "Squares of numbers: ";
+    for (const auto& num : squares) {
+        std::cout << num << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+
+
+/***********************************************************************************************
+9. Filesystem Library
+************************************************************************************************/
+
+#include <iostream>
+#include <filesystem>
+
+int main() {
+    std::filesystem::path filePath = "path/to/file.txt";
+
+    if (std::filesystem::exists(filePath)) {
+        std::cout << "File exists!" << std::endl;
+    } else {
+        std::cout << "File does not exist!" << std::endl;
+    }
+
+    return 0;
+}
+
+#include <iostream>
+#include <filesystem>
+
+int main() {
+    std::filesystem::path directoryPath = "path/to/new_directory";
+
+    if (std::filesystem::create_directory(directoryPath)) {
+        std::cout << "Directory created!" << std::endl;
+    } else {
+        std::cout << "Failed to create directory!" << std::endl;
+    }
+
+    return 0;
+}
+
+#include <iostream>
+#include <filesystem>
+
+int main() {
+    std::filesystem::path sourcePath = "path/to/source.txt";
+    std::filesystem::path destinationPath = "path/to/destination.txt";
+
+    try {
+        std::filesystem::copy_file(sourcePath, destinationPath);
+        std::cout << "File copied successfully!" << std::endl;
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cout << "Failed to copy file: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
+
+
+/***********************************************************************************************
+10. New Standard Attributes:
+************************************************************************************************/
+ [[fallthrough]]; 
+#include <iostream>
+
+void printNumberType(int num) {
+    switch (num) {
+        case 0:
+            std::cout << "Number is zero" << std::endl;
+            [[fallthrough]];
+        case 1:
+        case 2:
+        case 3:
+            std::cout << "Number is a small positive integer" << std::endl;
+            break;
+        default:
+            std::cout << "Number is a larger positive integer" << std::endl;
+            break;
+    }
+}
+
+int main() {
+    printNumberType(0);
+    printNumberType(2);
+    printNumberType(5);
+
+    return 0;
+}
+
+
+ [[nodiscard]] int calculateSum(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int result = calculateSum(10, 20); // Compiler warning if the return value is ignored
+   // calculateSum(120, 20); // Error
+    return 0;
+}
+
+#include <iostream>
+
+bool isEven(int num) {
+    if (num % 2 == 0) {
+        return [[likely]] true;  // Hint that the branch is likely to be taken
+    } else {
+        return [[unlikely]] false;  // Hint that the branch is unlikely to be taken
+    }
+}
+
+int main() {
+    int number;
+
+    std::cout << "Enter a number: ";
+    std::cin >> number;
+
+    if (isEven(number)) {
+        std::cout << "The number is even." << std::endl;
+    } else {
+        std::cout << "The number is odd." << std::endl;
+    }
+
+    return 0;
+}
+
+
+/***********************************************************************************************
+11. Construction Rules for Aggregate Types
+************************************************************************************************/
+
+/***********************************************************************************************
+12. Order of Evaluation for Expressions:
+************************************************************************************************/
+
+
+
+/***********************************************************************************************
+13. std::optional: std::variant,
+************************************************************************************************/
+#include <iostream>
+#include <optional>
+
+std::optional<int> divide(int a, int b) {
+    if (b != 0) {
+        return a / b;
+    } else {
+        return std::nullopt;  // Indicate the absence of a value
+    }
+}
+
+int main() {
+    std::optional<int> result = divide(10, 5);
+    if (result.has_value()) {
+        std::cout << "Result: " << result.value() << std::endl;
+    } else {
+        std::cout << "Division by zero!" << std::endl;
+    }
+
+    return 0;
+}
+
+#include <iostream>
+#include <variant>
+#include <string>
+
+using MyVariant = std::variant<int, double, std::string>;
+
+void printValue(const MyVariant& value) {
+    if (std::holds_alternative<int>(value)) {
+        std::cout << "Value is an int: " << std::get<int>(value) << std::endl;
+    } else if (std::holds_alternative<double>(value)) {
+        std::cout << "Value is a double: " << std::get<double>(value) << std::endl;
+    } else if (std::holds_alternative<std::string>(value)) {
+        std::cout << "Value is a string: " << std::get<std::string>(value) << std::endl;
+    }
+}
+
+int main() {
+    MyVariant v1 = 42;
+    MyVariant v2 = 3.14;
+    MyVariant v3 = "Hello, world!";
+
+    printValue(v1);
+    printValue(v2);
+    printValue(v3);
+
+    return 0;
+}
+
+ 
+ 
+/***********************************************************************************************
+14.  inline namespace
+************************************************************************************************/
+
+#include <iostream>
+
+namespace math {
+    inline namespace v1 {
+        int add(int a, int b) {
+            return a + b;
+        }
+    }
+
+    // New version of the 'add' function
+    inline namespace v2 {
+        double add(double a, double b) {
+            return a + b;
+        }
+    }
+}
+
+int main() {
+    std::cout << math::add(1, 2) << std::endl;           // Uses the 'add' function from v1
+    std::cout << math::add(3.14, 2.71) << std::endl;     // Uses the 'add' function from v2
+
+    return 0;
+}
